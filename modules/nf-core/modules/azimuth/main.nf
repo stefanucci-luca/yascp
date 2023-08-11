@@ -1,6 +1,6 @@
 process AZIMUTH{
     tag "${samplename}"    
-    label 'process_high_memory'
+    label 'process_medium'
    
     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
         container "https://yascp.cog.sanger.ac.uk/public/singularity_images/wtsihgi_nf_scrna_qc_azimuth_d54db9b-2021-12-13-8dd0b7fce918.sif"

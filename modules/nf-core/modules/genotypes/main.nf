@@ -80,7 +80,7 @@ process VIREO_GT_FIX_HEADER
         overwrite: "true"
   if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
       // println "container: /software/hgi/containers/wtsihgi-nf_genotype_match-1.0.sif\n"
-      container "https://yascp.cog.sanger.ac.uk/public/singularity_images/wtsihgi-nf_yascp_htstools-1.1.sif"
+      container "https://yascp.cog.sanger.ac.uk/public/singularity_images/scrna_deconvolution_v3.img"
   } else {
       container "mercury/wtsihgi-nf_yascp_htstools-1.1"
   }
@@ -122,7 +122,7 @@ process VIREO_GT_FIX_HEADER
     bcftools reheader -h header.txt ${sorted_vcf} | \
     bcftools view -Oz -o pre_${vireo_fixed_vcf}
     tabix -p vcf pre_${vireo_fixed_vcf}
-    bcftools +fixref pre_${vireo_fixed_vcf} -Oz -o ${vireo_fixed_vcf} -- -d -f ${genome}/genome.fa -m flip
+    bcftools +fixref pre_${vireo_fixed_vcf} -Oz -o ${vireo_fixed_vcf} -- -d -f ${genome}/genome.fa -m flip-all
     tabix -p vcf ${vireo_fixed_vcf}
 
 
@@ -233,10 +233,10 @@ process GT_MATCH_POOL_IBD
   script:
     """
       #bcftools +prune -m 0.2 -w 50 ${vireo_gt_vcf} -Ov -o pruned_${vireo_gt_vcf}
-      plink --vcf ${vireo_gt_vcf} --indep-pairwise 50 5 0.2 --out all2 --make-bed --double-id
-      plink --bfile all2 --extract all2.prune.in --out pruned --export vcf
-      plink --vcf pruned.vcf --genome unbounded --const-fid dummy --out ${mode2}_${mode}_${pool_id}
-      rm all*
+      #plink --vcf ${vireo_gt_vcf} --indep-pairwise 50 5 0.2 --out all2 --make-bed --double-id
+      #plink --bfile all2 --extract all2.prune.in --out pruned --export vcf
+      plink --vcf ${vireo_gt_vcf} --genome unbounded --const-fid dummy --out ${mode2}_${mode}_${pool_id}
+      #rm all*
     """
 }
 
@@ -251,7 +251,7 @@ process GT_MATCH_POOL_AGAINST_PANEL
       container "mercury/wtsihgi-nf_yascp_htstools-1.1"
   }
 
-  label 'process_low'
+  label 'process_tiny'
   //when: params.vireo.run_gtmatch_aposteriori
 
   input:
@@ -479,10 +479,6 @@ workflow MATCH_GT_VIREO {
 
 
   main:
-    // VIREO header causes problems downstream
-
-    // ch_gt_pool_ref_vcf.subscribe { println "match_genotypes: ch_gt_pool_ref_vcf = ${it}\n" }
-    // gt_math_pool_against_panel_input.subscribe { println "match_genotypes: gt_math_pool_against_panel_input = ${it}\n" }
     // now match genotypes against a panels
     GT_MATCH_POOL_AGAINST_PANEL(gt_math_pool_against_panel_input)
 

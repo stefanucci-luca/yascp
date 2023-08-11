@@ -13,6 +13,19 @@ if (binding.hasVariable("echo_mode") == false) {
 }
 
 
+// process AMBIENTNESS_QUANTIFICATION{
+//     label 'process_medium'
+  
+//     if (workflow.containerEngine == 'singularity' && !params.singularity_pull_docker_container) {
+//       container "https://yascp.cog.sanger.ac.uk/public/singularity_images/wtsihgi_nf_cellbender_container_3cc9983-2021-12-14-5e3143ef9e66.sif"
+//       maxRetries = 1
+//     } else {
+//       container "wtsihgi/nf_cellbender_container:3cc9983"
+//     }
+
+// }
+
+
 process cellbender__rb__get_input_cells {
 
   label 'process_low'

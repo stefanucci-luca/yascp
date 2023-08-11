@@ -1031,9 +1031,12 @@ if __name__ == '__main__':
     Sample_metadata = pd.DataFrame()
     
     adqc.obs['tranche.id']=args.experiment_name
-    adqc.obs['cell_passes_qc-per:Azimuth:L0_predicted.celltype.l2:score'] = adqc.obs['cell_passes_qc-per:Azimuth:L0_predicted.celltype.l2:score'].astype(float)
-    adqc.obs['cell_passes_qc-per:all_together::exclude:score']= adqc.obs['cell_passes_qc-per:all_together::exclude:score'].astype(float)
-    
+    try:
+        adqc.obs['cell_passes_qc-per:Azimuth:L0_predicted.celltype.l2:score'] = adqc.obs['cell_passes_qc-per:Azimuth:L0_predicted.celltype.l2:score'].astype(float,errors='ignore')
+        adqc.obs['cell_passes_qc-per:all_together::exclude:score']= adqc.obs['cell_passes_qc-per:all_together::exclude:score'].astype(float,errors='ignore')
+    except:
+        _='no values associated'
+        
     for expid in df_raw.index:
         print(expid)
         # try:

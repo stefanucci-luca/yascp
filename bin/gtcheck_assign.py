@@ -8,7 +8,7 @@ import sys
 import statistics
 import copy
 
-SMVAL = 1.0E-9
+SMVAL = 1.0E-29
 
 class ScoreMatrix:
     def __init__(self):
@@ -87,6 +87,7 @@ class ScoreMatrix:
     def find_matches(self):
         rsltd = {}
         for k in self.gtchkd:
+            print(k)
             self.gtchkd[k].sort(key = lambda a: a[1])
             if DEBUG:
                 print(self.gtchkd[k])
@@ -118,7 +119,10 @@ class ScoreMatrix:
                         print("WARNING: ambiguous assignment", donor0, donor1, score0, score1, m, sd, d0, d1)
                         sys.stderr.write("ERROR: {:s} assignment ambiguous.\n".format(donor0))
                 else:
-                    sd = score1 - score0
+                    if(score1==score0):
+                        sd = 0.0000000001
+                    else:
+                        sd = score1 - score0
             z0 = d0/sd
             z1 = d1/sd
             rsltd[k] = (donor0, score0, score1, score_n, n, m, sd, z0, z1, dd1/sd)
@@ -163,8 +167,8 @@ if __name__ == '__main__':
     sys.stdout.write("\nAssignments:\n")
     for k in rsltd:
         (donorid, score0, score1, score_n, n, m, sd, z0, z1, zz1) = rsltd[k]
-        if z0 < SMVAL:
-            donorid = 'UNASSIGNED'
+        # if z0 < SMVAL:
+        #     donorid = 'UNASSIGNED'
         sys.stdout.write(
             "{:s} -> {:s} score0 = {:.1f}, score1 = {:.1f}, score_last = {:.1f}, n_samples = {:d}, "
             "mean = {:.1f}, sd = {:.1f}, z0 = {:.1f}, z1 = {:.1f}, zz1 = {:.1f}\n"

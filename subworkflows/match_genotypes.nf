@@ -27,6 +27,7 @@ workflow match_genotypes {
     cellsnp_cell_vcfs2
     cell_assignments
     subsampling_donor_swap
+    informative_uninformative_sites
   main:
 
        
@@ -87,8 +88,9 @@ workflow match_genotypes {
     input5 = input4.combine(MATCH_GT_VIREO.out.donor_match_table_with_pool_id, by:0)
     // input5.subscribe { println "input5: $it" }
     input6 = input5.combine(cell_assignments, by:0)
+    input7 = input6.combine(informative_uninformative_sites, by:0)
     // input6.subscribe { println "input6: $it" }
-    CONCORDANCE_CALCLULATIONS(input6)
+    CONCORDANCE_CALCLULATIONS(input7)
       
     ch_combine = subsampling_donor_swap.combine(CONCORDANCE_CALCLULATIONS.out.concordances, by: 0)
     

@@ -90,6 +90,12 @@ def main_data_colection(pipeline='',name='',directory='',input_table=None,cb_res
     except:
         print('exists')
     metadata_table = pd.DataFrame()
+    d1 = glob.glob(f"{results_dir}/*/web_summary.html")
+    d2 = glob.glob(f"{results_dir}/*/*/web_summary.html")
+    d3 = glob.glob(f"{results_dir}/*/*/*/web_summary.html")
+    d4 =glob.glob(f"{results_dir}/*/*/*/*/web_summary.html")
+    ts3 = [*d1, *d2,*d3,*d4]
+    ts3 = pd.DataFrame(ts3,columns=['col'])
     for folder in df_raw.index:
         dir3 = f"{df_raw.loc[folder, 'data_path_10x_format']}"
         try:
@@ -100,10 +106,15 @@ def main_data_colection(pipeline='',name='',directory='',input_table=None,cb_res
             metadata_table=pd.concat([metadata_table,metadata])
         except:
             try:
-                copyfile(f'{results_dir}/handover/{name_dir}/Fetch Pipeline/html_{folder}.html', f'{name_dir}/Fetch Pipeline/html_{folder}.html')
+                try:
+                    copyfile(f'{results_dir}/handover/{name_dir}/Fetch Pipeline/html_{folder}.html', f'{name_dir}/Fetch Pipeline/html_{folder}.html')
+                except:
+                    try:
+                        copyfile(ts3[ts3['col'].str.contains(f'{folder}')]['col'].values[0], f'{name_dir}/Fetch Pipeline/html_{folder}.html')
+                    except:    
+                        copyfile(f'/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/qc/{name}/results_rsync2/results/handover/{name_dir}/Fetch Pipeline/html_{folder}.html', f'{name_dir}/Fetch Pipeline/html_{folder}.html')
             except:
-                copyfile(f'/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/qc/{name}/results_rsync2/results/handover/{name_dir}/Fetch Pipeline/html_{folder}.html', f'{name_dir}/Fetch Pipeline/html_{folder}.html')
-            
+                _='pass'
             try:
                 metadata_table = pd.read_csv(f'{results_dir}/handover/{name_dir}/Fetch Pipeline/CSV/Submission_Data_Pilot_UKB.file_metadata.tsv',sep='\t')
                 metadata_table.set_index('Sample_id',drop=True,inplace=True)
@@ -120,8 +131,10 @@ def main_data_colection(pipeline='',name='',directory='',input_table=None,cb_res
     if (len(metadata_table)>0):
         metadata_table.to_csv(f'{name_dir}/Fetch Pipeline/CSV/Submission_Data_Pilot_UKB.file_metadata.tsv',sep='\t')
     else:
-        copyfile(f'/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/qc/{name}/results_rsync2/results/handover/Summary_plots/{name}/Fetch Pipeline/CSV/Submission_Data_Pilot_UKB.file_metadata.tsv', f'{name_dir}/Fetch Pipeline/CSV/Submission_Data_Pilot_UKB.file_metadata.tsv')
-            
+        try:
+            copyfile(f'/lustre/scratch123/hgi/projects/ukbb_scrna/pipelines/Pilot_UKB/qc/{name}/results_rsync2/results/handover/Summary_plots/{name}/Fetch Pipeline/CSV/Submission_Data_Pilot_UKB.file_metadata.tsv', f'{name_dir}/Fetch Pipeline/CSV/Submission_Data_Pilot_UKB.file_metadata.tsv')
+        except:
+            _='pass' 
 
     try:
         os.mkdir(f'{name_dir}/Fetch Pipeline/Input')
@@ -135,9 +148,9 @@ def main_data_colection(pipeline='',name='',directory='',input_table=None,cb_res
         print('exists')
 
     #NOW COPY THE GT OUTPUTS 
-    folder1 = f'{directory}/deconvolution/vireo_gt_fix'
-    if os.path.isdir(folder1):
-        copyfile(f'{folder1}/assignments_all_pools.tsv', f'{name_dir}/GT Match___1000/assignments_all_pools.tsv')
+    #folder1 = f'{directory}/deconvolution/vireo_gt_fix'
+    #if os.path.isdir(folder1):
+    #    copyfile(f'{folder1}/assignments_all_pools.tsv', f'{name_dir}/GT Match___1000/assignments_all_pools.tsv')
         
 
     #if (pipeline=='Deconvolution'):

@@ -66,6 +66,7 @@ GT_Assignments['pool']=pool
 GT_Assignments['tranche']=tranche
 GT_Assignments['donor_gt original']=GT_Assignments['donor_gt']
 D2 = pd.DataFrame(All_expected_ids,columns=['col1'])
+All_Expected_set = []
 for ix in GT_Assignments.index:
     # print(ix)
     #Here should add a a filter to estimate whether it is a good match.
@@ -83,12 +84,17 @@ for ix in GT_Assignments.index:
     if (len(gp_ma)>0):
         try:
             # replacement = 'S2-046-01741'
-            replacement = str(gp_ma.loc[replacement][0])
+            try:
+                replacement = str(gp_ma.loc[replacement].iloc[0].values[0])
+            except:
+                replacement = str(gp_ma.loc[replacement].iloc[0])
             # print(replacement)
             # replacement = replacement.values[0]
             
             if len(D2[D2.col1.str.contains(replacement)])>0:
                 GT_Assignments.loc[ix,'Match Expected']='True'
+                remove_from_set = D2[D2.col1.str.contains(replacement)]['col1'].values[0]
+                All_Expected_set.append(remove_from_set)
         except:
             try:
                 # replacement='15001608190388_204238910153_R09C02'
@@ -101,6 +107,8 @@ for ix in GT_Assignments.index:
                         if len(D2[D2.col1.str.contains(rep1)])>0:
                             GT_Assignments.loc[ix,'Match Expected']='True'
                             replacement = rep1
+                            remove_from_set = D2[D2.col1.str.contains(replacement)]['col1'].values[0]
+                            All_Expected_set.append(remove_from_set)
                 else:
                     replacement = replacements.values[0]
             except:
@@ -109,6 +117,8 @@ for ix in GT_Assignments.index:
         _ = ''
     if len(D2[D2.col1.str.contains(replacement)])>0:
         GT_Assignments.loc[ix,'Match Expected']='True'
+        remove_from_set = D2[D2.col1.str.contains(replacement)]['col1'].values[0]
+        All_Expected_set.append(remove_from_set)
     if 'THP1' in replacement:
         replacement = 'celline_THP1'
     if 'U937' in replacement:
@@ -120,8 +130,10 @@ for ix in GT_Assignments.index:
 
 
 # Now that we have loaded them replace all the files with the correct donor ids.
-
+Missing = ';'.join(set(All_expected_ids)-set(All_Expected_set))
+GT_Assignments['Missing']=Missing
 GT_Assignments.to_csv(f'GT_replace_{args.donor_match}',sep='\t')
+
 
 
 print("Done")

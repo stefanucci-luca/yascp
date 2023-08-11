@@ -165,8 +165,9 @@ def main():
 
     # For each color to plot, loop over the different iterations.
     for color_var in colors_quantitative:
-        adata.obs[color_var] = adata.obs[color_var].astype('double')
         try:
+            adata.obs[color_var] = adata.obs[color_var].astype('double')
+        
             save_pc_fig(
                 adata=adata,
                 out_file_base=out_file_base,

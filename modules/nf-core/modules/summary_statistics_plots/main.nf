@@ -55,6 +55,6 @@ process TRANSFER {
     script:
 
       """ 
-        ./rsync_to_web.sh ${params.project_name}          
+        ./rsync_to_web.sh ${params.project_name} ${results_dir}        
       """
 }

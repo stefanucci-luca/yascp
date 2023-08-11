@@ -20,10 +20,13 @@ process CONCORDANCE_CALCLULATIONS {
         path(vcf_exp), 
         path(vcf_exp_csi),
         path(cell_vcf),
-        path(donor_table),path(cell_assignments))
+        path(donor_table),path(cell_assignments),path(set2_informative_sites), path(set1_uninformative_sites),path(variants_description))
 
     output:
+        tuple val(pool_id), path("cell_concordance_table_noA2G.tsv"), emit: concordances_noAG
+        tuple val(pool_id), path('discordant_sites_in_other_donors_noA2G.txt'), emit: read_concordances_noAG
         tuple val(pool_id), path("cell_concordance_table.tsv"), emit: concordances
+        tuple val(pool_id), path('discordant_sites_in_other_donors.txt'), emit: read_concordances
 
     script:
 
@@ -34,8 +37,10 @@ process CONCORDANCE_CALCLULATIONS {
                 bcftools view ${vcf_gt_match} -R ${cell_vcf} -Oz -o sub_${pool_id}_GT_Matched.vcf.gz
             fi
             
-            bcftools view  -i 'FORMAT/DP > 3' ${cell_vcf} -Oz -o sub_${pool_id}_cellSNP_dp_filter.vcf.gz
-            concordance_calculations_donor_exclusive_dp.py --cpus $task.cpus --cell_vcf ${cell_vcf} --cell_vcf_dp sub_${pool_id}_cellSNP_dp_filter.vcf.gz --donor_assignments ${donor_table} --gt_match_vcf sub_${pool_id}_GT_Matched.vcf.gz --expected_vcf sub_${pool_id}_Expected.vcf.gz --cell_assignments ${cell_assignments}
+            concordance_calculations_donor_exclusive_read_level_noA2G.py --cpus $task.cpus --cell_vcf ${cell_vcf} --donor_assignments ${donor_table} --gt_match_vcf sub_${pool_id}_GT_Matched.vcf.gz --expected_vcf sub_${pool_id}_Expected.vcf.gz --cell_assignments ${cell_assignments} --informative_sites ${set2_informative_sites} --uninformative_sites ${set1_uninformative_sites}
+            find_discordant_sites_in_other_donors_noA2G.py --cpus $task.cpus --cell_vcf ${cell_vcf} --donor_assignments ${donor_table} --gt_match_vcf sub_${pool_id}_GT_Matched.vcf.gz --expected_vcf sub_${pool_id}_Expected.vcf.gz --cell_assignments ${cell_assignments} --outfile discordant_sites_in_other_donors_noA2G.txt --debug
+            concordance_calculations_donor_exclusive_read_level.py --cpus $task.cpus --cell_vcf ${cell_vcf} --donor_assignments ${donor_table} --gt_match_vcf sub_${pool_id}_GT_Matched.vcf.gz --expected_vcf sub_${pool_id}_Expected.vcf.gz --cell_assignments ${cell_assignments} --informative_sites ${set2_informative_sites} --uninformative_sites ${set1_uninformative_sites}
+            find_discordant_sites_in_other_donors.py --cpus $task.cpus --cell_vcf ${cell_vcf} --donor_assignments ${donor_table} --gt_match_vcf sub_${pool_id}_GT_Matched.vcf.gz --expected_vcf sub_${pool_id}_Expected.vcf.gz --cell_assignments ${cell_assignments} --outfile discordant_sites_in_other_donors.txt --debug
         """
 }
 
@@ -69,7 +74,7 @@ process COMBINE_FILES{
     script:
 
         """
-           combine_concordance.py -cc ${concordance_table} -sq ${subsampling_table} -name ${pool_id}
+           combine_concordance.py -cc ${concordance_table} -sq ${subsampling_table} -name ${pool_id} --run ${params.RUN}
         """
 
 }
