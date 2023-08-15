@@ -661,9 +661,27 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
         _ = 'no unassigned detected'
 
     Donors_in_pool = len(Donors)
-    Number_of_Reads = int(metrics['Number of Reads'].values[0].replace(',','')) # NOT SURE HOW THIS IS CALCULATED.
-    Fraction_Reads_in_Cells = metrics['Fraction Reads in Cells'].values[0]
-    Mean_reads_per_cell = int(metrics['Mean Reads per Cell'].values[0].replace(',',''))
+    try:
+        Number_of_Reads = int(metrics['Number of Reads'].values[0].replace(',','')) # NOT SURE HOW THIS IS CALCULATED.
+    except:
+        try:
+             Number_of_Reads = int(metrics['Number of reads'].values[0].replace(',','')) 
+        except:
+            Number_of_Reads = None
+    try:
+        Fraction_Reads_in_Cells = metrics['Fraction Reads in Cells'].values[0]
+    except:
+        try:
+            Fraction_Reads_in_Cells = metrics['Sequencing saturation'].values[0]
+        except:
+            Fraction_Reads_in_Cells = None
+    try:
+        Mean_reads_per_cell = int(metrics['Mean Reads per Cell'].values[0].replace(',',''))
+    except:
+        try:
+            Mean_reads_per_cell = int(metrics['Mean reads per cell'].values[0].replace(',',''))
+        except:
+            Mean_reads_per_cell= None
     # adata_cellranger_raw.X
     f = pd.DataFrame(adata_cellranger_filtered.X.sum(axis=1))
     Median_UMI_Counts_per_cellranger= statistics.median(f[f>0][0])
@@ -680,7 +698,10 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
 
     f = pd.DataFrame(ad_lane_filtered.X.sum(axis=0)).T
     Median_UMI_Counts_per_Gene = statistics.median(f[f[0]>0][0])
-    Valid_Droplet_percentage = metrics['Valid Barcodes'].values[0]
+    try:
+        Valid_Droplet_percentage = metrics['Valid Barcodes'].values[0]
+    except:
+        Valid_Droplet_percentage = metrics['Valid barcodes'].values[0]
     df1 = ad_lane_filtered.to_df()
     Number_of_cells = len(set(df1.index))
     Total_UMIs_before_10x_filter = np.sum(ad_lane_raw.X) #this may be after the normalisation
@@ -728,15 +749,20 @@ def gather_pool(expid, args, df_raw, df_cellbender, adqc, oufh = sys.stdout,lane
     Tranche_Pass_Fail='PASS'
     Tranche_Failure_Reason=''
 
-    print("** Fraction_Reads_in_Cells : "+Fraction_Reads_in_Cells.strip('%'))
+    # print("** Fraction_Reads_in_Cells : "+Fraction_Reads_in_Cells.strip('%'))
     Tranche_Failure_Reason =' '
-    if (float(Fraction_Reads_in_Cells.strip('%'))<=70):
-        Tranche_Pass_Fail='FAIL'
-        Tranche_Failure_Reason +='Fraction of reads in cells for pool<=70%; '
-    if (Mean_reads_per_cell<=25000):
-        Tranche_Pass_Fail='FAIL'
-        Tranche_Failure_Reason +='Mean reads per cell for all cells in pool <=25000; '
-        
+    try:
+        if (float(Fraction_Reads_in_Cells.strip('%'))<=70):
+            Tranche_Pass_Fail='FAIL'
+            Tranche_Failure_Reason +='Fraction of reads in cells for pool<=70%; '
+    except:
+        _='cant validate reasoning'
+    try:
+        if (Mean_reads_per_cell<=25000):
+            Tranche_Pass_Fail='FAIL'
+            Tranche_Failure_Reason +='Mean reads per cell for all cells in pool <=25000; '
+    except:
+        _='cant validate reasoning'        
     
     for i in df_donors.index:
         print(i)
@@ -1031,9 +1057,12 @@ if __name__ == '__main__':
     Sample_metadata = pd.DataFrame()
     
     adqc.obs['tranche.id']=args.experiment_name
-    adqc.obs['cell_passes_qc-per:Azimuth:L0_predicted.celltype.l2:score'] = adqc.obs['cell_passes_qc-per:Azimuth:L0_predicted.celltype.l2:score'].astype(float)
-    adqc.obs['cell_passes_qc-per:all_together::exclude:score']= adqc.obs['cell_passes_qc-per:all_together::exclude:score'].astype(float)
-    
+    try:
+        adqc.obs['cell_passes_qc-per:Azimuth:L0_predicted.celltype.l2:score'] = adqc.obs['cell_passes_qc-per:Azimuth:L0_predicted.celltype.l2:score'].astype(float,errors='ignore')
+        adqc.obs['cell_passes_qc-per:all_together::exclude:score']= adqc.obs['cell_passes_qc-per:all_together::exclude:score'].astype(float,errors='ignore')
+    except:
+        _='no values associated'
+        
     for expid in df_raw.index:
         print(expid)
         # try:

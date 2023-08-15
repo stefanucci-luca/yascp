@@ -143,7 +143,7 @@ def anndata_from_h5(
                 del adata.obs[col]
             except Exception:
                 pass
-
+    adata = adata[:,adata.var.query('feature_type=="Gene Expression"').index]
     return adata
 
 

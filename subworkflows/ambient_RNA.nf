@@ -52,8 +52,8 @@ workflow ambient_RNA {
         if (params.citeseq){
             // Here we capture the filtered matrix and applyt the DSB normalisation on the citeseq datasets
             cb_Filtered.join(ab_data, by: [0], remainder: false).set{cb_ab}
-            cb_ab.join(ch_experimentid_paths10x_raw, by: [0], remainder: false).set{cb_ab_raw}
-            DSB(cb_ab_raw)
+            cb_ab.join(ch_experimentid_paths10x_raw, by: [0], remainder: false).set{cb_ab_raw}  
+            // DSB(cb_ab_raw)
         }
 
         alt_input1 = CELLBENDER.out.cellbender_path
